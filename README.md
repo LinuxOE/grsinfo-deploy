@@ -7,7 +7,7 @@ Usage: deploy.sh -[OPTION]
  ./deploy.sh -S ... Restart tomcat services,front and after  
  ./deploy.sh -[h|H]... Get help information.  
  
-使用前需要确保各台tomcat服务器上已经安装zip
-脚本所在机器已经安装rsync、sshpass
-确保deylo.conf中定义的目录都已经创建并拥有读写权限
+使用前需要确保各台tomcat服务器上已经安装zip  
+脚本所在机器已经安装rsync、sshpass  
+确保deylo.conf中定义的目录都已经创建并拥有读写权限  
 
