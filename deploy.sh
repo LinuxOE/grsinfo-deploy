@@ -91,9 +91,9 @@ while getopts 'd:Dr:RhH' OPTION
 do
     case $OPTION in
     d)
-        if [ $OPTARG == "FRONT" ];then
+        if [ $OPTARG = "FRONT" ];then
             deploy "$FRONT"
-        elif [ $OPTARG == "AFTER" ];then
+        elif [ $OPTARG = "AFTER" ];then
             deploy "$AFTER"
         else
             echo "The arguments error!"
@@ -106,9 +106,9 @@ do
 	deploy "$AFTER"
 	;;
     r)
-        if [ $OPTARG == "FRONT" ];then
+        if [ $OPTARG = "FRONT" ];then
 	    reboot "$FRONT"
-        elif [ $OPTARG == "AFTER" ];then
+        elif [ $OPTARG = "AFTER" ];then
 	    reboot "$AFTER"
         else
             echo "The arguments error!"
