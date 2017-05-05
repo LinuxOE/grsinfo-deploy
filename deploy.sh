@@ -11,19 +11,15 @@ AFTER_S=`expr $AFTER_NUM + 1`
 AFTER_E=$NUM_TOTAL
 AFTER=$(egrep -v '^$|^#' deploy.conf|sed -n "$AFTER_S,$AFTER_E"p)
 
-if [ ! -e `which rsync` ];then
-    echo 'Please install [rsync]!'
-    exit 1
-#else
-#    echo '[rsynac] is already installed.'
-fi
 
-if [ ! -e `which sshpass` ];then
-    echo 'Please install [sshpass]!'
-    exit 1
-#else
-#    echo '[sshpass] is already installed.'
-fi
+dependent(){
+    if ! which $1 > /dev/null ;then
+	echo "Please install [$1]!"
+	exit 1
+#    else
+#	echo "[$1] is already installed."
+    fi
+}
 
 argument(){
     NF_NUM=$(echo ""$1""|awk  '{print NF}');\
@@ -46,6 +42,8 @@ config(){
 bakcup(){
     for IP in $IPLIST
     do
+	sshpass -p $PASSWORD ssh $USER@$IP "(
+	    )"
 	sshpass -p $PASSWORD ssh $USER@$IP "(
 	    ZIPFILE_NUM=\$(ls $BACKUP_DIR/*.zip 2> /dev/null |wc -l) ;
 	    if [ \$ZIPFILE_NUM -ge 3 ]
@@ -85,6 +83,11 @@ reboot(){
 	sshpass -p $PASSWORD ssh $USER@$IP "($TOMCAT_BASE/bin/cominfo_grsinfo_java_env.sh;$TOMCAT_BASE/bin/shutdown.sh && sleep 5 && $TOMCAT_BASE/bin/startup.sh)"
     done
 }
+
+for packet in rsync sshpass 
+do
+    dependent $packet
+done
 
 while getopts 'dDrRhH' OPTION
 do
