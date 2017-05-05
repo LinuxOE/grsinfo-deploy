@@ -43,13 +43,13 @@ bakcup(){
     for IP in $IPLIST
     do
 	sshpass -p $PASSWORD ssh $USER@$IP "(
-	    ZIPFILE_NUM=\$(ls $BACKUP_DIR/*.zip 2> /dev/null |wc -l) ;
+	    ZIPFILE_NUM=\$(ls $BACKUP_DIR/*.tar.gz 2> /dev/null |wc -l) ;
 	    if [ \$ZIPFILE_NUM -ge 3 ]
 	    then
-		ls -t $BACKUP_DIR/*.zip|tail -n \`expr \$ZIPFILE_NUM - 2\`|xargs rm -v
+		ls -t $BACKUP_DIR/*.tar.gz|tail -n \`expr \$ZIPFILE_NUM - 2\`|xargs rm -v
 	    fi ;
 	    cd $TOMCAT_BASE/webapps/ ;
-	    zip $BACKUP_DIR/Front-$(date +%Y%m%d%H%M).zip *.war)"
+	    tar -czvf $BACKUP_DIR/Front-$(date +%Y%m%d%H%M).tar.gz *.war)"
     done
 }
 
