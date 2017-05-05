@@ -43,8 +43,6 @@ bakcup(){
     for IP in $IPLIST
     do
 	sshpass -p $PASSWORD ssh $USER@$IP "(
-	    )"
-	sshpass -p $PASSWORD ssh $USER@$IP "(
 	    ZIPFILE_NUM=\$(ls $BACKUP_DIR/*.zip 2> /dev/null |wc -l) ;
 	    if [ \$ZIPFILE_NUM -ge 3 ]
 	    then
@@ -78,9 +76,9 @@ reboot(){
     details "$1"
     for IP in $IPLIST
     do
-	#sshpass -p $PASSWORD ssh $USER@$IP "($TOMCAT_BASE/bin/cominfo_grsinfo_java_env.sh;$TOMCAT_BASE/bin/shutdown.sh)"
-	#sshpass -p $PASSWORD ssh $USER@$IP "($TOMCAT_BASE/bin/cominfo_grsinfo_java_env.sh;$TOMCAT_BASE/bin/startup.sh)"
-	sshpass -p $PASSWORD ssh $USER@$IP "($TOMCAT_BASE/bin/cominfo_grsinfo_java_env.sh;$TOMCAT_BASE/bin/shutdown.sh && sleep 5 && $TOMCAT_BASE/bin/startup.sh)"
+	#sshpass -p $PASSWORD ssh $USER@$IP "(source $TOMCAT_BASE/bin/cominfo_grsinfo_java_env.sh;$TOMCAT_BASE/bin/shutdown.sh)"
+	#sshpass -p $PASSWORD ssh $USER@$IP "(source $TOMCAT_BASE/bin/cominfo_grsinfo_java_env.sh;$TOMCAT_BASE/bin/startup.sh)"
+	sshpass -p $PASSWORD ssh $USER@$IP "(source $TOMCAT_BASE/bin/cominfo_grsinfo_java_env.sh;$TOMCAT_BASE/bin/shutdown.sh && sleep 5 && $TOMCAT_BASE/bin/startup.sh)"
     done
 }
 
@@ -89,28 +87,55 @@ do
     dependent $packet
 done
 
-while getopts 'dDrRhH' OPTION
+while getopts 'd:Dr:RhH' OPTION
 do
     case $OPTION in
-    d|D)
+    d)
+        if [ $OPTARG == "FRONT" ];then
+            deploy "$FRONT"
+        elif [ $OPTARG == "AFTER" ];then
+            deploy "$AFTER"
+        else
+            echo "The arguments error!"
+	    echo "Can only choose the FRONT or AFTER."
+            exit 1
+        fi
+        ;;
+    D)
 	deploy "$FRONT"
 	deploy "$AFTER"
 	;;
-    r|R)
+    r)
+        if [ $OPTARG == "FRONT" ];then
+	    reboot "$FRONT"
+        elif [ $OPTARG == "AFTER" ];then
+	    reboot "$AFTER"
+        else
+            echo "The arguments error!"
+            echo "Can only choose the FRONT or AFTER."
+            exit 1
+        fi
+        ;;
+    R)
 	reboot "$FRONT"
 	reboot "$AFTER"
 	;;
     h|H)
-	echo "Usage: `basename $0` -[dDrRhH]"
-	echo " `basename $0` -d... War file to update."
-	echo " `basename $0` -s... Restart tomcat services."
-	echo " `basename $0` -h... Get help information."
+	echo "Usage: `basename $0` -[OPTION]"
+	echo " `basename $0` -d [FRONT|AFTER]... Update the war file,front or after."
+	echo " `basename $0` -s [FRONT|AFTER]... Restart tomcat services,front or after"
+	echo " `basename $0` -D ... Update the war file,front and after"
+	echo " `basename $0` -S ... Restart tomcat services,front and after"
+	echo " `basename $0` -[h|H]... Get help information."
 	;;
     *)
-	echo "Usage: `basename $0` -[dDrRhH]"
-	echo " `basename $0` -d... War file to update."
-	echo " `basename $0` -s... Restart tomcat services."
-	echo " `basename $0` -h... Get help information."
+	echo "Usage: `basename $0` -[OPTION]"
+	echo " `basename $0` -d [FRONT|AFTER]... Update the war file,front or after."
+	echo " `basename $0` -s [FRONT|AFTER]... Restart tomcat services,front or after"
+	echo " `basename $0` -D ... Update the war file,front and after"
+	echo " `basename $0` -S ... Restart tomcat services,front and after"
+	echo " `basename $0` -[h|H]... Get help information."
+	exit 1
 	;;
     esac
 done
