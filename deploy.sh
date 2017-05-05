@@ -1,0 +1,113 @@
+#!/bin/bash
+NUM_TOTAL=$(egrep -v '^$|^#' deploy.conf|wc -l)
+FRONT_NUM=$(egrep -v '^$|^#' deploy.conf|egrep -n '\[FRONT\]'|cut -d ':' -f 1)
+AFTER_NUM=$(egrep -v '^$|^#' deploy.conf|egrep -n '\[AFTER\]'|cut -d ':' -f 1)
+
+FRONT_S=`expr $FRONT_NUM + 1`
+FRONT_E=`expr $AFTER_NUM - 1`
+FRONT=$(egrep -v '^$|^#' deploy.conf|sed -n "$FRONT_S,$FRONT_E"p)
+
+AFTER_S=`expr $AFTER_NUM + 1`
+AFTER_E=$NUM_TOTAL
+AFTER=$(egrep -v '^$|^#' deploy.conf|sed -n "$AFTER_S,$AFTER_E"p)
+
+if [ ! -e `which rsync` ];then
+    echo 'Please install [rsync]!'
+    exit 1
+#else
+#    echo '[rsynac] is already installed.'
+fi
+
+if [ ! -e `which sshpass` ];then
+    echo 'Please install [sshpass]!'
+    exit 1
+#else
+#    echo '[sshpass] is already installed.'
+fi
+
+argument(){
+    NF_NUM=$(echo ""$1""|awk  '{print NF}');\
+           for i in `seq 1 $NF_NUM`
+           do
+                           echo "$1"|awk "\$$i ~/$2/ {print \$$i}"
+           done\
+           |awk -F '[="]+' '{print $2}'
+}
+
+config(){
+    USER=$(argument "$1" user)
+    PASSWORD=$(argument "$1" password)
+    IPLIST=$(argument "$1" iplist)
+    TOMCAT_BASE=$(argument "$1" tomcat_base)
+    BACKUP_DIR=$(argument "$1" backup_dir)
+    SRC_DIR=$(argument "$1" src_dir)
+}
+
+bakcup(){
+    for IP in $IPLIST
+    do
+	sshpass -p $PASSWORD ssh $USER@$IP "(
+	    ZIPFILE_NUM=\$(ls $BACKUP_DIR/*.zip 2> /dev/null |wc -l) ;
+	    if [ \$ZIPFILE_NUM -ge 3 ]
+	    then
+		ls -t $BACKUP_DIR/*.zip|tail -n \`expr \$ZIPFILE_NUM - 2\`|xargs rm -v
+	    fi ;
+	    cd $TOMCAT_BASE/webapps/ ;
+	    zip $BACKUP_DIR/Front-$(date +%Y%m%d%H%M).zip *.war)"
+    done
+}
+
+rsend(){
+    for IP in $IPLIST
+    do
+	sshpass -p $PASSWORD rsync -avP $SRC_DIR/*.war $USER@$IP:$TOMCAT_BASE/webapps/
+	#sshpass -p $PASSWORD|rsync -avP --delete $SRC_DIR/*.war $USER@$IP:$TOMCAT_BASE/webapps/
+    done
+}
+
+details(){
+    config "$1"
+    IPLIST=$(echo $IPLIST|tr ',' ' ')
+}
+
+deploy(){
+    details "$1"
+    bakcup
+    rsend
+}
+
+reboot(){
+    details "$1"
+    for IP in $IPLIST
+    do
+	#sshpass -p $PASSWORD ssh $USER@$IP "($TOMCAT_BASE/bin/cominfo_grsinfo_java_env.sh;$TOMCAT_BASE/bin/shutdown.sh)"
+	#sshpass -p $PASSWORD ssh $USER@$IP "($TOMCAT_BASE/bin/cominfo_grsinfo_java_env.sh;$TOMCAT_BASE/bin/startup.sh)"
+	sshpass -p $PASSWORD ssh $USER@$IP "($TOMCAT_BASE/bin/cominfo_grsinfo_java_env.sh;$TOMCAT_BASE/bin/shutdown.sh && sleep 5 && $TOMCAT_BASE/bin/startup.sh)"
+    done
+}
+
+while getopts 'dDrRhH' OPTION
+do
+    case $OPTION in
+    d|D)
+	deploy "$FRONT"
+	deploy "$AFTER"
+	;;
+    r|R)
+	reboot "$FRONT"
+	reboot "$AFTER"
+	;;
+    h|H)
+	echo "Usage: `basename $0` -[dDrRhH]"
+	echo " `basename $0` -d... War file to update."
+	echo " `basename $0` -s... Restart tomcat services."
+	echo " `basename $0` -h... Get help information."
+	;;
+    *)
+	echo "Usage: `basename $0` -[dDrRhH]"
+	echo " `basename $0` -d... War file to update."
+	echo " `basename $0` -s... Restart tomcat services."
+	echo " `basename $0` -h... Get help information."
+	;;
+    esac
+done
