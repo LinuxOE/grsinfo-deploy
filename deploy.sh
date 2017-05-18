@@ -87,6 +87,18 @@ do
     dependent $packet
 done
 
+
+if [ $# -eq 0 ];then
+    echo "Usage: `basename $0` -[OPTION]"
+    echo " ./`basename $0` -d [FRONT|AFTER]... Update the war file,front or after."
+    echo " ./`basename $0` -s [FRONT|AFTER]... Restart tomcat services,front or after"
+    echo " ./`basename $0` -D ... Update the war file,front and after"
+    echo " ./`basename $0` -S ... Restart tomcat services,front and after"
+    echo " ./`basename $0` -[h|H]... Get help information."
+
+    exit 1
+fi
+
 while getopts 'd:Dr:RhH' OPTION
 do
     case $OPTION in
