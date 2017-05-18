@@ -49,7 +49,9 @@ bakcup(){
 		ls -t $BACKUP_DIR/*.tar.gz|tail -n \`expr \$ZIPFILE_NUM - 2\`|xargs rm -v
 	    fi ;
 	    cd $TOMCAT_BASE/webapps/ ;
-	    tar -czvf $BACKUP_DIR/Front-$(date +%Y%m%d%H%M).tar.gz *.war)"
+	    echo -e '\nBEGIN BACKUP: ';
+	    tar -czvf $BACKUP_DIR/Front-$(date +%Y%m%d%H%M).tar.gz *.war)";
+	    echo -e '\nBEGIN RSYNC: '
     done
 }
 
@@ -93,13 +95,12 @@ do
     dependent $packet
 done
 
-
 if [ $# -eq 0 ];then
     echo "Usage: `basename $0` -[OPTION]"
     echo " ./`basename $0` -d [FRONT|AFTER]... Update the war file,front or after."
-    echo " ./`basename $0` -s [FRONT|AFTER]... Restart tomcat services,front or after"
+    echo " ./`basename $0` -r [FRONT|AFTER]... Restart tomcat services,front or after"
     echo " ./`basename $0` -D ... Update the war file,front and after"
-    echo " ./`basename $0` -S ... Restart tomcat services,front and after"
+    echo " ./`basename $0` -R ... Restart tomcat services,front and after"
     echo " ./`basename $0` -[h|H]... Get help information."
 
     exit 1
@@ -120,8 +121,17 @@ do
         fi
         ;;
     D)
+	echo -e '===================='
+	echo -e '|BEGIN DEPLOY FRONT|'
+	echo -e '===================='
 	deploy "$FRONT"
+	echo -e '\nEND DEPLOY FRONT'
+	echo -e '\n\n=======================\n=======================\n\n'
+	echo -e '===================='
+	echo -e '|BEGIN DEPLOY AFTER|'
+	echo -e '===================='
 	deploy "$AFTER"
+	echo -e '\nEND DEPLOY AFTER'
 	;;
     r)
         if [ $OPTARG = "FRONT" ];then
@@ -141,17 +151,17 @@ do
     h|H)
 	echo "Usage: `basename $0` -[OPTION]"
 	echo " ./`basename $0` -d [FRONT|AFTER]... Update the war file,front or after."
-	echo " ./`basename $0` -s [FRONT|AFTER]... Restart tomcat services,front or after"
+	echo " ./`basename $0` -r [FRONT|AFTER]... Restart tomcat services,front or after"
 	echo " ./`basename $0` -D ... Update the war file,front and after"
-	echo " ./`basename $0` -S ... Restart tomcat services,front and after"
+	echo " ./`basename $0` -R ... Restart tomcat services,front and after"
 	echo " ./`basename $0` -[h|H]... Get help information."
 	;;
     *)
 	echo "Usage: `basename $0` -[OPTION]"
 	echo " ./`basename $0` -d [FRONT|AFTER]... Update the war file,front or after."
-	echo " ./`basename $0` -s [FRONT|AFTER]... Restart tomcat services,front or after"
+	echo " ./`basename $0` -r [FRONT|AFTER]... Restart tomcat services,front or after"
 	echo " ./`basename $0` -D ... Update the war file,front and after"
-	echo " ./`basename $0` -S ... Restart tomcat services,front and after"
+	echo " ./`basename $0` -R ... Restart tomcat services,front and after"
 	echo " ./`basename $0` -[h|H]... Get help information."
 	exit 1
 	;;
