@@ -93,16 +93,20 @@ deploy(){
 
     echo -e '\n\n'
     read -p 'Whether to delete the source war file? (YES/NO): ' DECISION
+    DECISION=${DECISION-"NO"}
+
+    while [ ! $DECISION = 'YES' ] && [ ! $DECISION = 'NO' ]
+    do
+	read -p 'Whether to delete the source war file? (YES/NO): ' DECISION
+    done
+
     case $DECISION in
     YES)
-	rm -rvf $SRC_DIR/*.war
-	;;
-    NO)
-	echo 'Didn'"'"'t do anything!'
-	;;
+        rm -rvf $SRC_DIR/*.war
+        ;;
     *)
-	echo 'Didn'"'"'t do anything!'
-	;;
+        echo 'Didn'"'"'t do anything!'
+        ;;
     esac
 }
 
