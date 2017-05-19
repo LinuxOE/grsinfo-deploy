@@ -40,14 +40,27 @@ config(){
 }
 
 backup(){
+    SRCWARFILE=$(cd $SRC_DIR/;ls *.war)
+
     sshpass -p $PASSWORD ssh $USER@$IP "(
-	ZIPFILE_NUM=\$(ls $BACKUP_DIR/*.tar.gz 2> /dev/null |wc -l) ;
-	if [ \$ZIPFILE_NUM -ge 3 ]
-	then
-	    ls -t $BACKUP_DIR/*.tar.gz|tail -n \`expr \$ZIPFILE_NUM - 2\`|xargs rm -v
-	fi ;
-	cd $TOMCAT_BASE/webapps/ ;
-	tar -czvf $BACKUP_DIR/Front-$(date +%Y%m%d%H%M).tar.gz *.war)";
+    for i in $SRCWARFILE
+    do
+	BCKFILE_NUM=\$(ls $BACKUP_DIR/\$i-* 2> /dev/null |wc -l) ;
+	    if [ \$BCKFILE_NUM -ge 3 ]
+	    then
+		ls -t $BACKUP_DIR/\$i-*|tail -n \`expr \$BCKFILE_NUM - 2\`|xargs rm -v
+	    fi;
+    done;
+
+
+    for i in $SRCWARFILE
+    do
+	if [ -f $TOMCAT_BASE/webapps/\$i ];then
+	    mv -v $TOMCAT_BASE/webapps/\$i $BACKUP_DIR/\$i-\$(date +%Y%m%d%H%M)
+	    rm -rf $TOMCAT_BASE/webapps/\$(basename \$i .war)
+	    #cp -v $TOMCAT_BASE/webapps/\$i $BACKUP_DIR/\$i-\$(date +%Y%m%d%H%M)
+	fi
+    done)"
 }
 
 rsend(){
