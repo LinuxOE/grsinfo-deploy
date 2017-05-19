@@ -51,13 +51,13 @@ bakcup(){
 	    cd $TOMCAT_BASE/webapps/ ;
 	    echo -e '\nBEGIN BACKUP: ';
 	    tar -czvf $BACKUP_DIR/Front-$(date +%Y%m%d%H%M).tar.gz *.war)";
-	    echo -e '\nBEGIN RSYNC: '
     done
 }
 
 rsend(){
     for IP in $IPLIST
     do
+	echo -e '\nBEGIN RSYNC: '
 	sshpass -p $PASSWORD rsync -avP $SRC_DIR/*.war $USER@$IP:$TOMCAT_BASE/webapps/
 	#sshpass -p $PASSWORD|rsync -avP --delete $SRC_DIR/*.war $USER@$IP:$TOMCAT_BASE/webapps/
     done
@@ -111,9 +111,17 @@ do
     case $OPTION in
     d)
         if [ $OPTARG = "FRONT" ];then
+	    echo -e '===================='
+	    echo -e '|BEGIN DEPLOY FRONT|'
+	    echo -e '===================='
             deploy "$FRONT"
+	    echo -e '\nEND DEPLOY FRONT'
         elif [ $OPTARG = "AFTER" ];then
-            deploy "$AFTER"
+	    echo -e '===================='
+	    echo -e '|BEGIN DEPLOY AFTER|'
+	    echo -e '===================='
+	    deploy "$AFTER"
+	    echo -e '\nEND DEPLOY AFTER'
         else
             echo "The arguments error!"
 	    echo "Can only choose the FRONT or AFTER."
