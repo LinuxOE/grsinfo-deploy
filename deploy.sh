@@ -39,28 +39,20 @@ config(){
     SRC_DIR=$(argument "$1" src_dir)
 }
 
-bakcup(){
-    for IP in $IPLIST
-    do
-	sshpass -p $PASSWORD ssh $USER@$IP "(
-	    ZIPFILE_NUM=\$(ls $BACKUP_DIR/*.tar.gz 2> /dev/null |wc -l) ;
-	    if [ \$ZIPFILE_NUM -ge 3 ]
-	    then
-		ls -t $BACKUP_DIR/*.tar.gz|tail -n \`expr \$ZIPFILE_NUM - 2\`|xargs rm -v
-	    fi ;
-	    cd $TOMCAT_BASE/webapps/ ;
-	    echo -e '\nBEGIN BACKUP: ';
-	    tar -czvf $BACKUP_DIR/Front-$(date +%Y%m%d%H%M).tar.gz *.war)";
-    done
+backup(){
+    sshpass -p $PASSWORD ssh $USER@$IP "(
+	ZIPFILE_NUM=\$(ls $BACKUP_DIR/*.tar.gz 2> /dev/null |wc -l) ;
+	if [ \$ZIPFILE_NUM -ge 3 ]
+	then
+	    ls -t $BACKUP_DIR/*.tar.gz|tail -n \`expr \$ZIPFILE_NUM - 2\`|xargs rm -v
+	fi ;
+	cd $TOMCAT_BASE/webapps/ ;
+	tar -czvf $BACKUP_DIR/Front-$(date +%Y%m%d%H%M).tar.gz *.war)";
 }
 
 rsend(){
-    for IP in $IPLIST
-    do
-	echo -e '\nBEGIN RSYNC: '
-	sshpass -p $PASSWORD rsync -avP $SRC_DIR/*.war $USER@$IP:$TOMCAT_BASE/webapps/
-	#sshpass -p $PASSWORD|rsync -avP --delete $SRC_DIR/*.war $USER@$IP:$TOMCAT_BASE/webapps/
-    done
+    sshpass -p $PASSWORD rsync -avP $SRC_DIR/*.war $USER@$IP:$TOMCAT_BASE/webapps/
+    #sshpass -p $PASSWORD|rsync -avP --delete $SRC_DIR/*.war $USER@$IP:$TOMCAT_BASE/webapps/
 }
 
 details(){
@@ -76,17 +68,29 @@ deploy(){
 	exit 1
     fi
 
-    bakcup
-    rsend
+    for IP in $IPLIST
+    do
+	echo -e "\n================"
+	echo -e "-\033[44;33m$IP\033[0m-"
+	echo -e '\nBEGIN BACKUP: ';
+	backup
+	echo -e '\nBEGIN RSYNC: '
+	rsend
+    done
 }
 
 reboot(){
     details "$1"
     for IP in $IPLIST
     do
+	echo -e "-\033[44;33m$IP\033[0m-"
 	#sshpass -p $PASSWORD ssh $USER@$IP "(source $TOMCAT_BASE/bin/cominfo_grsinfo_java_env.sh;$TOMCAT_BASE/bin/shutdown.sh)"
 	#sshpass -p $PASSWORD ssh $USER@$IP "(source $TOMCAT_BASE/bin/cominfo_grsinfo_java_env.sh;$TOMCAT_BASE/bin/startup.sh)"
-	sshpass -p $PASSWORD ssh $USER@$IP "(source $TOMCAT_BASE/bin/cominfo_grsinfo_java_env.sh;$TOMCAT_BASE/bin/shutdown.sh && sleep 5 && $TOMCAT_BASE/bin/startup.sh)"
+	#sshpass -p $PASSWORD ssh $USER@$IP "(source $TOMCAT_BASE/bin/cominfo_grsinfo_java_env.sh;$TOMCAT_BASE/bin/shutdown.sh && sleep 5 && $TOMCAT_BASE/bin/startup.sh)"
+        #sshpass -p $PASSWORD ssh $USER@$IP "($TOMCAT_BASE/bin/startup.sh; killall java && sleep 5 && $TOMCAT_BASE/bin/startup.sh)"
+        sshpass -p $PASSWORD ssh $USER@$IP "(ps aux|grep cominfo|grep tomcat|grep java|awk '{print \$2}'|xargs -i kill {})"
+	sleep 5
+        sshpass -p $PASSWORD ssh $USER@$IP "$TOMCAT_BASE/bin/startup.sh"
     done
 }
 
@@ -112,16 +116,20 @@ do
     d)
         if [ $OPTARG = "FRONT" ];then
 	    echo -e '===================='
-	    echo -e '|BEGIN DEPLOY FRONT|'
+	    echo -e '|BEGIN DEPLOY \033[45;37mFRONT\033[0m|'
 	    echo -e '===================='
             deploy "$FRONT"
-	    echo -e '\nEND DEPLOY FRONT'
+	    echo -e '=================='
+	    echo -e '|END DEPLOY \033[45;37mFRONT\033[0m|'
+	    echo -e '=================='
         elif [ $OPTARG = "AFTER" ];then
 	    echo -e '===================='
-	    echo -e '|BEGIN DEPLOY AFTER|'
+	    echo -e '|BEGIN DEPLOY \033[45;37mAFTER\033[0m|'
 	    echo -e '===================='
 	    deploy "$AFTER"
-	    echo -e '\nEND DEPLOY AFTER'
+	    echo -e '=================='
+	    echo -e '|END DEPLOY \033[45;37mFRONT\033[0m|'
+	    echo -e '=================='
         else
             echo "The arguments error!"
 	    echo "Can only choose the FRONT or AFTER."
@@ -130,16 +138,20 @@ do
         ;;
     D)
 	echo -e '===================='
-	echo -e '|BEGIN DEPLOY FRONT|'
+	echo -e '|BEGIN DEPLOY \033[45;37mFRONT\033[0m|'
 	echo -e '===================='
 	deploy "$FRONT"
-	echo -e '\nEND DEPLOY FRONT'
-	echo -e '\n\n=======================\n=======================\n\n'
+	echo -e '=================='
+	echo -e '|END DEPLOY \033[45;37mFRONT\033[0m|'
+	echo -e '=================='
+	echo -e '\n\n=======================\033[41;37mThe front end, start the backend!\033[0m=======================\n\n'
 	echo -e '===================='
-	echo -e '|BEGIN DEPLOY AFTER|'
+	echo -e '|BEGIN DEPLOY \033[45;37mAFTER\033[0m|'
 	echo -e '===================='
 	deploy "$AFTER"
-	echo -e '\nEND DEPLOY AFTER'
+	echo -e '=================='
+	echo -e '|END DEPLOY \033[45;37mAFTER\033[0m|'
+	echo -e '=================='
 	;;
     r)
         if [ $OPTARG = "FRONT" ];then
