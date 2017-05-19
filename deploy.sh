@@ -90,6 +90,20 @@ deploy(){
 	echo -e '\nBEGIN RSYNC: '
 	rsend
     done
+
+    echo -e '\n\n'
+    read -p 'Whether to delete the source war file? (YES/NO): ' DECISION
+    case $DECISION in
+    YES)
+	rm -rvf $SRC_DIR/*.war
+	;;
+    NO)
+	echo 'Didn'"'"'t do anything!'
+	;;
+    *)
+	echo 'Didn'"'"'t do anything!'
+	;;
+    esac
 }
 
 reboot(){
