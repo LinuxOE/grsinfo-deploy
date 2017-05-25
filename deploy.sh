@@ -76,7 +76,7 @@ details(){
 deploy(){
     details "$1"
 
-    if [ ! -f $SRC_DIR/*.war ];then
+    if ! $(ls $SRC_DIR/*.war >/dev/null 2>&1);then
 	echo "No war files in the $SRC_DIR!"
 	exit 1
     fi
