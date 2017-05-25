@@ -121,7 +121,7 @@ reboot(){
         #sshpass -p $PASSWORD ssh $USER@$IP "($TOMCAT_BASE/bin/startup.sh; killall java && sleep 5 && $TOMCAT_BASE/bin/startup.sh)"
         sshpass -p $PASSWORD ssh $USER@$IP "(ps aux|grep cominfo|grep tomcat|grep java|awk '{print \$2}'|xargs -i kill {})"
 	sleep 5
-        sshpass -p $PASSWORD ssh $USER@$IP "$TOMCAT_BASE/bin/startup.sh"
+        sshpass -p $PASSWORD ssh $USER@$IP "cd $TOMCAT_BASE/bin;./startup.sh"
     done
 }
 
