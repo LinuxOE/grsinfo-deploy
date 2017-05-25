@@ -85,9 +85,9 @@ deploy(){
     do
 	echo -e "\n================"
 	echo -e "-\033[44;33m$IP\033[0m-"
-	echo -e '\nBEGIN BACKUP: ';
-	backup
-	echo -e '\nBEGIN RSYNC: '
+#	echo -e '\nBEGIN BACKUP: ';
+#	backup
+#	echo -e '\nBEGIN RSYNC: '
 	rsend
     done
 
@@ -121,7 +121,7 @@ reboot(){
         #sshpass -p $PASSWORD ssh $USER@$IP "($TOMCAT_BASE/bin/startup.sh; killall java && sleep 5 && $TOMCAT_BASE/bin/startup.sh)"
         sshpass -p $PASSWORD ssh $USER@$IP "(ps aux|grep cominfo|grep tomcat|grep java|awk '{print \$2}'|xargs -i kill {})"
 	sleep 5
-        sshpass -p $PASSWORD ssh $USER@$IP "$TOMCAT_BASE/bin/startup.sh"
+        sshpass -p $PASSWORD ssh $USER@$IP "cd $TOMCAT_BASE/bin;./startup.sh"
     done
 }
 
