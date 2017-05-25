@@ -85,9 +85,9 @@ deploy(){
     do
 	echo -e "\n================"
 	echo -e "-\033[44;33m$IP\033[0m-"
-#	echo -e '\nBEGIN BACKUP: ';
-#	backup
-#	echo -e '\nBEGIN RSYNC: '
+	echo -e '\nBEGIN BACKUP: ';
+	backup
+	echo -e '\nBEGIN RSYNC: '
 	rsend
     done
 
