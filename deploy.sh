@@ -43,7 +43,7 @@ backup(){
     SRCWARFILE=$(cd $SRC_DIR/;ls *.war)
 
     sshpass -p $PASSWORD ssh $USER@$IP "(
-    for i in $SRCWARFILE
+    for i in "$SRCWARFILE"
     do
 	BCKFILE_NUM=\$(ls $BACKUP_DIR/\$i-* 2> /dev/null |wc -l) ;
 	    if [ \$BCKFILE_NUM -ge 3 ]
@@ -53,7 +53,7 @@ backup(){
     done;
 
 
-    for i in $SRCWARFILE
+    for i in "$SRCWARFILE"
     do
 	if [ -f $TOMCAT_BASE/webapps/\$i ];then
 	    mv -v $TOMCAT_BASE/webapps/\$i $BACKUP_DIR/\$i-\$(date +%Y%m%d%H%M)
