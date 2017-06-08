@@ -1,4 +1,5 @@
 #!/bin/bash
+#writer: starry
 NUM_TOTAL=$(egrep -v '^$|^#' deploy.conf|wc -l)
 FRONT_NUM=$(egrep -v '^$|^#' deploy.conf|egrep -n '\[FRONT\]'|cut -d ':' -f 1)
 AFTER_NUM=$(egrep -v '^$|^#' deploy.conf|egrep -n '\[AFTER\]'|cut -d ':' -f 1)
